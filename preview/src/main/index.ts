@@ -3,6 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+import ElectronViteTitleBarLoader from '../../../src/electron-vite-title-bar-loader'
+const electronViteTitleBarLoader = new ElectronViteTitleBarLoader()
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -16,6 +19,8 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  electronViteTitleBarLoader.initialize(mainWindow)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

@@ -40,7 +40,7 @@ const iconHeight = ref<number>()
 onBeforeMount(() => {
   const roles = ['minimize', 'maximize', 'restore', 'close']
   if (!roles.includes(props.role)) {
-    throw TypeError('role은 minimize, maximize, restore, close 값을 가질 수 있습니다.')
+    throw TypeError('role only has minimize, maximize, restore, close')
   }
 
   if (props.role == 'maximize') {

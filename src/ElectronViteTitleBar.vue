@@ -4,7 +4,7 @@
         <img class="evtb-logo" :src="props.icon"/>
       </section>
       <section class="evtb-menu-container"></section>
-      <section v-if="props.title" class="evtb-title-container">
+      <section v-show="props.title" class="evtb-title-container">
         {{ props.title }}
       </section>
       <section class="evtb-button-container">
@@ -16,27 +16,53 @@
     </section>
 </template>
 <script setup lang="ts">
+import './electron-vite-title-bar-interfaces'
+import './electron-vite-title-bar-style.css'
 import { ref, onMounted } from 'vue'
 import ElectronViteTitleBarButton from './ElectronViteTitleBarButton.vue'
+import ElectronViteTitleBarMenu from './electron-vite-title-bar-menu'
 
+declare global {
+  interface Window {
+    evtb: any
+  }
+}
 const props = defineProps<{
   icon?: string,
   title?: string,
-  menu?: Array<string>
+  menu?: Array<MenuInfo>
 }>()
-const emit = defineEmits<{
-  onMenuClick: [label: string]
+const emitter = defineEmits<{
+  (e: 'onMenuClick', label: string): void
 }>()
 
 const container = ref<HTMLElement>()
+let electronViteTitleBarMenu: ElectronViteTitleBarMenu
 const isWindowMaximized = ref<Boolean>(false)
-const onMinimize = () => console.log('minimize')
-const onMaximize = () => console.log('maximize')
-const onRestore = () => console.log('restore')
-const onClose = () => console.log('close')
+const onMinimize = () => window.evtb.minimize()
+const onMaximize = () => window.evtb.maximize()
+const onRestore = () => window.evtb.restore()
+const onClose = () => window.evtb.close()
 
-onMounted(() => {
-  console.log(container)
+onMounted(async () => {
+  if (props.menu && container.value != undefined) {
+    const menuContainer = document.querySelector('section.evtb-menu-container') as HTMLElement
+    const titleContainer = document.querySelector('section.evtb-title-container') as HTMLElement
+    electronViteTitleBarMenu = new ElectronViteTitleBarMenu(menuContainer, container.value, titleContainer, emitter)
+    electronViteTitleBarMenu.setMenuInfo(props.menu)
+    electronViteTitleBarMenu.createRootMenu()
+
+    // 윈도우의 프레임이 변경되었을 때, 너비에 따라 루트 메뉴를 재생성할 수 있도록
+    // 이벤트를 구성한다.
+    window.addEventListener('resize', () => {
+      electronViteTitleBarMenu.createRootMenu()
+    })
+  }
+
+  isWindowMaximized.value = await window.evtb.isMaximized()
+  window.addEventListener('resize', async () => {
+    isWindowMaximized.value = await window.evtb.isMaximized()
+  })
 })
 </script>
 <style>
@@ -158,9 +184,9 @@ section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] > svg {
   height: 1.8em;
   fill: var(--evtb-menu-item-expand-icon-fill-color);
 }
-section.evtb-menu-container > ul:not([level="0"]) > li[type="seperator"] {
+section.evtb-menu-container > ul:not([level="0"]) > li[type="separator"] {
   height: 1px;
-  border-top: 1px solid var(--evtb-menu-item-seperator-color);
+  border-top: 1px solid var(--evtb-menu-item-separator-color);
   padding: 0;
   margin: 4px 0 2.8px 0;
 }
