@@ -182,6 +182,8 @@ class ElectronViteTitleBarMenu {
           break;
         }
       }
+
+      this.addMenuDestroyListener()
     }
 
     // 메뉴를 만들 때, 모든 메뉴가 만들어지지 않은 경우
@@ -329,6 +331,24 @@ class ElectronViteTitleBarMenu {
       this.destroyMenuGroup(level + 1)
       if (menuInfo.subMenu != undefined) {
         this.createMenu(menuElement, level + 1, menuInfo.subMenu)
+      }
+    })
+  }
+
+  private addMenuDestroyListener (): void {
+    document.addEventListener('click', (e) => {
+      let isMenuClicked: Boolean = false
+
+      const groups: NodeListOf<HTMLElement> = this.container.querySelectorAll('ul.evtb-menu-group:not([level="0"])')
+      groups.forEach(group => {
+        if (e.target == group) {
+          isMenuClicked = true
+        }
+      })
+      
+      if (!isMenuClicked) {
+        this.destroyMenuGroup(1)
+        this.isMenuActivated = false
       }
     })
   }
