@@ -1,6 +1,6 @@
 <template>
   <button ref="button" class="evtb-button" :class="{ close: props.role == 'close' }">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" :style="{ width: iconWidth + 'px', height: iconHeight + 'px' }">
+    <svg ref="buttonSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" :style="{ width: iconWidth + 'px', height: iconHeight + 'px' }">
       <path :d="iconPath"/>
     </svg>
   </button>
@@ -10,10 +10,6 @@ import { ref, computed, onBeforeMount, onMounted } from 'vue'
 
 const props = defineProps<{
   role: string
-}>()
-
-const emit = defineEmits<{
-  click: []
 }>()
 
 type SvgPathType = {
@@ -31,6 +27,7 @@ const svgPath: SvgPathType = {
 }
 
 const button = ref<HTMLButtonElement>()
+const buttonSvg = ref<SVGElement>()
 const iconPath = computed<string>(() => {
   return svgPath[props.role]
 })
@@ -57,7 +54,8 @@ onBeforeMount(() => {
 
 onMounted(() => {
   const element = button.value
-  if (!element) return
+  const svgElement = buttonSvg.value
+  if (!element || !svgElement) return
 
   element.addEventListener('mouseover', () => {
     if (!element.classList.contains('hover')) {
@@ -79,7 +77,16 @@ onMounted(() => {
     if (element.classList.contains('hover')) {
       element.classList.remove('hover')
     }
-    emit('click')
+  })
+  document.addEventListener('mouseup', (e) => {
+    if (e.target != element && e.target != svgElement) {
+      if (element.classList.contains('active')) {
+        element.classList.remove('active')
+      }
+      if (element.classList.contains('hover')) {
+        element.classList.remove('hover')
+      }
+    }
   })
 })
 </script>
