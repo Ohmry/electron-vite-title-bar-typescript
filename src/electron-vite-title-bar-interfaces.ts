@@ -1,8 +1,15 @@
 interface MenuInfo {
+  id?: string
   label?: string
   hotKey?: string
   subMenu?: Array<MenuInfo>
-  separator?: Boolean
+  separator?: Boolean,
+  disabled?: Boolean
+}
+
+interface MenuValidation {
+  success: Boolean,
+  error?: string
 }
 
 interface CollapseMenuInfo {
@@ -15,5 +22,6 @@ interface EvtbWindowApi {
   maximize: Function,
   minimize: Function,
   restore: Function,
-  close: Function
+  close: Function,
+  menu?: any
 }

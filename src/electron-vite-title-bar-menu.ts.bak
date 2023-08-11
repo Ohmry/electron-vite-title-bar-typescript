@@ -5,41 +5,39 @@ const expandSubMenuSvgPath: string = 'M543.846-480.231 353.538-671.308l22.231-22
 // SVG Path value of icon for indicate collapsed menu
 const collapseMenuSvgPath: string = 'M207.858-432Q188-432 174-446.142q-14-14.141-14-34Q160-500 174.142-514q14.141-14 34-14Q228-528 242-513.858q14 14.141 14 34Q256-460 241.858-446q-14.141 14-34 14Zm272 0Q460-432 446-446.142q-14-14.141-14-34Q432-500 446.142-514q14.141-14 34-14Q500-528 514-513.858q14 14.141 14 34Q528-460 513.858-446q-14.141 14-34 14Zm272 0Q732-432 718-446.142q-14-14.141-14-34Q704-500 718.142-514q14.141-14 34-14Q772-528 786-513.858q14 14.141 14 34Q800-460 785.858-446q-14.141 14-34 14Z'
 
-export default class ElectronViteTitleBarMenu {
-  public static instance: ElectronViteTitleBarMenu | null
-  private _container: HTMLElement | undefined
-  private _frameContainer: HTMLElement | undefined
-  private _titleContainer: HTMLElement | undefined
-  private _isMenuActivated: Boolean
-  private _emitter: any
-  private _menuList: Array<MenuInfo>
-  private _menuMap: Map<String, MenuInfo>
+class ElectronViteTitleBarMenu {
+  public static instance: ElectronViteTitleBarMenu
+  private container: HTMLElement
+  private frameContainer: HTMLElement
+  private titleContainer: HTMLElement
+  private isMenuActivated: Boolean = false
+  private emitter: any
+  private menuList: Array<MenuInfo>
+  private menuMap: Map<String, MenuInfo>
 
-  public static getInstance (): ElectronViteTitleBarMenu {
-    if (!this.instance) {
-      this.instance = new ElectronViteTitleBarMenu()
-    }
-    return this.instance
+  /**
+   * Constructor
+   * @param {<section> element that has menu elements.} container 
+   * @param {<section> element of ElectronViteTitleBar component.} frameContainer 
+   * @param {<section> element that has title element.>} titleContainer 
+   * @param {The emitter instance that fires the menu click event} emitter 
+   */
+  constructor (container: HTMLElement, frameContainer: HTMLElement, titleContainer: HTMLElement, emitter: any) {
+    this.container = container
+    this.frameContainer = frameContainer
+    this.titleContainer = titleContainer
+    this.isMenuActivated = false
+    this.emitter = emitter
+    this.menuList = new Array<MenuInfo>()
+    this.menuMap = new Map<String, MenuInfo>()
+    ElectronViteTitleBarMenu.instance = this
   }
-
-  constructor () {
-    this._isMenuActivated = false
-    this._menuList = new Array<MenuInfo>()
-    this._menuMap = new Map<String, MenuInfo>()
-  }
-
-  public initialize = (container: HTMLElement, frameContainer: HTMLElement, titleContainer: HTMLElement, emitter: any): void => {
-    this._container = container
-    this._frameContainer = frameContainer
-    this._titleContainer = titleContainer
-    this._emitter = emitter
-  }
-
+  
   /**
    * Setting menu infomation and validate.
    * @param {list of menu info that is consist of JSON Array} menuList 
    */
-  public setMenuInfo = (menuList: Array<MenuInfo>): void => {
+  public setMenuInfo (menuList: Array<MenuInfo>): void {
     for (let index = 0; index < menuList.length; index++) {
       const menuInfo = menuList[index]
       const validation = this.validateMenuInfo(menuInfo)
@@ -53,7 +51,7 @@ export default class ElectronViteTitleBarMenu {
         if (menuInfo.disabled == undefined) {
           menuInfo.disabled = false
         }
-        this._menuMap.set(menuInfo.id, menuInfo)
+        this.menuMap.set(menuInfo.id, menuInfo)
       }
 
       if (menuInfo.hotKey) {
@@ -78,7 +76,7 @@ export default class ElectronViteTitleBarMenu {
             if (subMenuInfo.disabled == undefined) {
               subMenuInfo.disabled = false
             }
-            this._menuMap.set(subMenuInfo.id, subMenuInfo)
+            this.menuMap.set(subMenuInfo.id, subMenuInfo)
           }
 
           if (subMenuInfo.hotKey) {
@@ -92,8 +90,10 @@ export default class ElectronViteTitleBarMenu {
       }
     }
     
-    this._menuList = menuList
+    this.menuList = menuList
   }
+
+  
 
   /**
    * Validate menu information.
@@ -127,31 +127,27 @@ export default class ElectronViteTitleBarMenu {
   /**
    * Create root menu items.
    */
-  public createRootMenu = (): void => {
-    if (!this._container || !this._frameContainer || !this._titleContainer) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
-    const rootGroup = this._container.querySelector('ul.evtb-menu-group[level="0"]')
+  public createRootMenu (): void {
+    const rootGroup = this.container.querySelector('ul.evtb-menu-group[level="0"]')
     if (rootGroup != null) {
       rootGroup.remove()
     }
 
     const group = this.createMenuGroup(0)
-    this._container.appendChild(group)
+    this.container.appendChild(group)
 
     let index: number = 0
-    const frameContainerWidth: number = this._frameContainer.getBoundingClientRect().width
+    const frameContainerWidth: number = this.frameContainer.getBoundingClientRect().width
 
     if (frameContainerWidth > 480) {
-      for (index; index < this._menuList.length; index++) {
-        const menuItem = this.createMenuItem(0, this._menuList[index])
+      for (index; index < this.menuList.length; index++) {
+        const menuItem = this.createMenuItem(0, this.menuList[index])
         group.appendChild(menuItem)
   
-        const menuContainerWidth = this._container.getBoundingClientRect().width
-        const menuContainerX = this._container.getBoundingClientRect().x
-        const titleContainerX = this._titleContainer.getBoundingClientRect().x
-        const tileContainerVisible = this._titleContainer.style.visibility == 'visible'
+        const menuContainerWidth = this.container.getBoundingClientRect().width
+        const menuContainerX = this.container.getBoundingClientRect().x
+        const titleContainerX = this.titleContainer.getBoundingClientRect().x
+        const tileContainerVisible = this.titleContainer.style.visibility == 'visible'
   
         // If overlap elements menu container and title container when create menu. 
         if (tileContainerVisible && (menuContainerWidth + menuContainerX) >= (titleContainerX - 20)) {
@@ -168,7 +164,7 @@ export default class ElectronViteTitleBarMenu {
 
     // If when create menu, doesn't created all menu
     // create collapse menu includes all remain menu by menu item.
-    if (index != this._menuList.length) {
+    if (index != this.menuList.length) {
       const collapseElement = document.createElement('li')
       collapseElement.setAttribute('type', 'menu')
       collapseElement.classList.add('evtb-menu-item-0')
@@ -181,8 +177,8 @@ export default class ElectronViteTitleBarMenu {
         subMenu: []
       }
 
-      for (index; index < this._menuList.length; index++) {
-        collapseMenu.subMenu.push(this._menuList[index])
+      for (index; index < this.menuList.length; index++) {
+        collapseMenu.subMenu.push(this.menuList[index])
       }
 
       this.addMenuClickListener(collapseElement, 0, collapseMenu)
@@ -199,11 +195,6 @@ export default class ElectronViteTitleBarMenu {
    * @param {submenu list} subMenuList 
    */
   private createMenu (parentElement: HTMLLIElement, level: number, subMenuList: Array<MenuInfo>): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
-    
     const group = this.createMenuGroup(level)
 
     // When parentElement is not null
@@ -222,7 +213,7 @@ export default class ElectronViteTitleBarMenu {
       group.appendChild(element)
     })
 
-    this._container.appendChild(group)
+    this.container.appendChild(group)
   }
 
   /**
@@ -242,11 +233,7 @@ export default class ElectronViteTitleBarMenu {
    * @param {level of menu} level 
    */
   private destroyMenuGroup (level: number): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
-    const groups = this._container.querySelectorAll('ul.evtb-menu-group')
+    const groups = this.container.querySelectorAll('ul.evtb-menu-group')
     groups.forEach(group => {
       const groupLevel = Number(group.getAttribute('level'))
       if (groupLevel >= level) {
@@ -371,8 +358,8 @@ export default class ElectronViteTitleBarMenu {
         if (e.ctrlKey == hasCtrl && e.altKey == hasAlt && e.shiftKey == hasShift && e.key.toUpperCase() == keys[0].toUpperCase()) {
           e.preventDefault()
           this.destroyMenuGroup(1)
-          this._isMenuActivated = false
-          this._emitter('onMenuClick', menuInfo.label)
+          this.isMenuActivated = false
+          this.emitter('onMenuClick', menuInfo.label)
         }
       })
     }
@@ -395,18 +382,18 @@ export default class ElectronViteTitleBarMenu {
         if (menuElement == selectedElement && level == 0) {
           this.destroyMenuGroup(1)
           this.setMenuSelected(level, null)
-          this._isMenuActivated = false
+          this.isMenuActivated = false
         } else {
           // 하위 메뉴가 있을 경우 하위 메뉴를 생성한다.
           this.destroyMenuGroup(level + 1)
           this.createMenu(menuElement, level + 1, menuInfo.subMenu)
-          this._isMenuActivated = true
+          this.isMenuActivated = true
         }
       } else if (!menuInfo.disabled) {
         // 하위 메뉴가 없을 경우 클릭 이벤트를 발생시킨다.
         this.destroyMenuGroup(1)
-        this._isMenuActivated = false
-        this._emitter('onMenuClick', menuInfo.id, menuInfo.label)
+        this.isMenuActivated = false
+        this.emitter('onMenuClick', menuInfo.id, menuInfo.label)
       }
     })
   }
@@ -420,7 +407,7 @@ export default class ElectronViteTitleBarMenu {
   private addMenuOverListener (menuElement: HTMLLIElement, level: number, menuInfo: MenuInfo): void {
     menuElement.addEventListener('mouseover', (e) => {
       e.stopPropagation()
-      if (!this._isMenuActivated) return
+      if (!this.isMenuActivated) return
       this.destroyMenuGroup(level + 1)
       if (menuInfo.subMenu != undefined) {
         this.createMenu(menuElement, level + 1, menuInfo.subMenu)
@@ -433,12 +420,8 @@ export default class ElectronViteTitleBarMenu {
    */
   private addMenuDestroyListener (): void {
     document.addEventListener('click', (e) => {
-      if (!this._container) {
-        console.error('Instance must be initialized, but got undefined')
-        return
-      }
       let isMenuClicked: Boolean = false
-      const groups: NodeListOf<HTMLElement> = this._container.querySelectorAll('ul.evtb-menu-group:not([level="0"])')
+      const groups: NodeListOf<HTMLElement> = this.container.querySelectorAll('ul.evtb-menu-group:not([level="0"])')
       
       groups.forEach(group => {
         if (e.target == group) {
@@ -448,7 +431,7 @@ export default class ElectronViteTitleBarMenu {
       
       if (!isMenuClicked) {
         this.destroyMenuGroup(1)
-        this._isMenuActivated = false
+        this.isMenuActivated = false
       }
     })
   }
@@ -459,11 +442,7 @@ export default class ElectronViteTitleBarMenu {
    * @param {<li> element that clicked} clickedElement 
    */
   private setMenuSelected (level: number, clickedElement: HTMLElement | null): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
-    const elements = this._container.querySelectorAll('li.evtb-menu-item-' + level)
+    const elements = this.container.querySelectorAll('li.evtb-menu-item-' + level)
     elements.forEach(li => {
       // 클릭한 메뉴 객체가 아닌데 selected 클래스가 있을 경우 제거한다.
       if (li != clickedElement && li.classList.contains('selected')) {
@@ -482,26 +461,26 @@ export default class ElectronViteTitleBarMenu {
    * @returns <li> element
    */
   private getMenuSelected (level: number): HTMLElement | null {
-    return this._container ? this._container.querySelector('li.evtb-menu-item-' + level + '.selected') : null
+    return this.container.querySelector('li.evtb-menu-item-' + level + '.selected')
   }
 
-  public getMenuList = (): Array<MenuInfo> => {
-    return this._menuList
+  public getMenuList (): Array<MenuInfo> {
+    return this.menuList
   }
 
-  public getMenuInfo = (id: string): MenuInfo | undefined => {
-    return this._menuMap.get(id)
+  public getMenuInfo (id: string): MenuInfo | undefined {
+    return this.menuMap.get(id)
   }
 
-  public setMenuDisabled = (id: string, disabled: Boolean): void => {
-    const menuInfo = this._menuMap.get(id)
+  public setMenuDisabled (id: string, disabled: Boolean): void {
+    const menuInfo = this.menuMap.get(id)
     if (menuInfo) {
       menuInfo.disabled = disabled
     }
   }
 
-  public getMenuDisabled = (id: string): Boolean | undefined => {
-    const menuInfo = this._menuMap.get(id)
+  public getMenuDisabled (id: string): Boolean | undefined {
+    const menuInfo = this.menuMap.get(id)
     if (menuInfo) {
       return menuInfo.disabled
     } else {
@@ -509,3 +488,5 @@ export default class ElectronViteTitleBarMenu {
     }
   }
 }
+
+export default ElectronViteTitleBarMenu
