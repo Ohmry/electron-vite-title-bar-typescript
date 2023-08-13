@@ -7,8 +7,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import ElectronViteTitleBar from '../../../../src/ElectronViteTitleBar.vue'
-import ElectronViteTitleBarMenu from '../../../../src/electron-vite-title-bar-menu'
+import { ElectronViteTitleBar, ElectronViteTitleBarMenu } from '../../../../src/index.ts'
 import '../../../../src/electron-vite-title-bar-style.css'
 
 const titlebar = ref()

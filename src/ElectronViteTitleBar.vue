@@ -47,8 +47,12 @@ onMounted(async () => {
   if (props.menu && container.value != undefined) {
     const menuContainer = document.querySelector('section.evtb-menu-container') as HTMLElement
     const titleContainer = document.querySelector('section.evtb-title-container') as HTMLElement
+    ElectronViteTitleBarMenu.initialize(menuContainer, container.value, titleContainer, emitter)
     const electronViteTitleBarMenu = ElectronViteTitleBarMenu.getInstance()
-    electronViteTitleBarMenu.initialize(menuContainer, container.value, titleContainer, emitter)
+    if (electronViteTitleBarMenu == undefined) {
+      console.error('ElectronViteTitleBarMenu must be initialized')
+      return
+    }
     electronViteTitleBarMenu.setMenuInfo(props.menu)
     electronViteTitleBarMenu.createRootMenu()
 

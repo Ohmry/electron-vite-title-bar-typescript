@@ -5,36 +5,54 @@ const expandSubMenuSvgPath: string = 'M543.846-480.231 353.538-671.308l22.231-22
 // SVG Path value of icon for indicate collapsed menu
 const collapseMenuSvgPath: string = 'M207.858-432Q188-432 174-446.142q-14-14.141-14-34Q160-500 174.142-514q14.141-14 34-14Q228-528 242-513.858q14 14.141 14 34Q256-460 241.858-446q-14.141 14-34 14Zm272 0Q460-432 446-446.142q-14-14.141-14-34Q432-500 446.142-514q14.141-14 34-14Q500-528 514-513.858q14 14.141 14 34Q528-460 513.858-446q-14.141 14-34 14Zm272 0Q732-432 718-446.142q-14-14.141-14-34Q704-500 718.142-514q14.141-14 34-14Q772-528 786-513.858q14 14.141 14 34Q800-460 785.858-446q-14.141 14-34 14Z'
 
-export default class ElectronViteTitleBarMenu {
-  public static instance: ElectronViteTitleBarMenu | null
-  private _container: HTMLElement | undefined
-  private _frameContainer: HTMLElement | undefined
-  private _titleContainer: HTMLElement | undefined
-  private _isMenuActivated: Boolean
+class ElectronViteTitleBarMenu {
+  private static instance: ElectronViteTitleBarMenu
+  private static initialized: Boolean = false
+  private static container: HTMLElement | undefined
+  private static frameContainer: HTMLElement | undefined
+  private static titleContainer: HTMLElement | undefined
+  private static emitter: any | undefined
+  private _container: HTMLElement
+  private _frameContainer: HTMLElement
+  private _titleContainer: HTMLElement
   private _emitter: any
+  private _isMenuActivated: Boolean
   private _menuList: Array<MenuInfo>
   private _menuMap: Map<String, MenuInfo>
 
+  public static initialize (container: HTMLElement, frameContainer: HTMLElement, titleContainer: HTMLElement, emitter: any): void {
+    this.container = container
+    this.frameContainer = frameContainer
+    this.titleContainer = titleContainer
+    this.emitter = emitter
+    ElectronViteTitleBarMenu.initialized = true
+  }
+
   public static getInstance (): ElectronViteTitleBarMenu {
-    if (!this.instance) {
-      this.instance = new ElectronViteTitleBarMenu()
+    if (!ElectronViteTitleBarMenu.initialized ||
+      this.container == undefined ||
+      this.frameContainer == undefined ||
+      this.titleContainer == undefined ||
+      this.emitter == undefined) {
+      throw TypeError('ElectronViteTitleBarMenu is not initaizlied')
     }
-    return this.instance
+    if (!ElectronViteTitleBarMenu.instance) {
+      ElectronViteTitleBarMenu.instance = new ElectronViteTitleBarMenu(this.container, this.frameContainer, this.titleContainer, this.emitter)
+    }
+    return ElectronViteTitleBarMenu.instance
   }
 
-  constructor () {
-    this._isMenuActivated = false
-    this._menuList = new Array<MenuInfo>()
-    this._menuMap = new Map<String, MenuInfo>()
-  }
-
-  public initialize = (container: HTMLElement, frameContainer: HTMLElement, titleContainer: HTMLElement, emitter: any): void => {
+  constructor (container: HTMLElement, frameContainer: HTMLElement, titleContainer: HTMLElement, emitter: any) {
     this._container = container
     this._frameContainer = frameContainer
     this._titleContainer = titleContainer
     this._emitter = emitter
+    this._isMenuActivated = false
+    this._menuList = new Array<MenuInfo>()
+    this._menuMap = new Map<String, MenuInfo>()
   }
-
+  
+  
   /**
    * Setting menu infomation and validate.
    * @param {list of menu info that is consist of JSON Array} menuList 
@@ -128,10 +146,6 @@ export default class ElectronViteTitleBarMenu {
    * Create root menu items.
    */
   public createRootMenu = (): void => {
-    if (!this._container || !this._frameContainer || !this._titleContainer) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
     const rootGroup = this._container.querySelector('ul.evtb-menu-group[level="0"]')
     if (rootGroup != null) {
       rootGroup.remove()
@@ -199,11 +213,6 @@ export default class ElectronViteTitleBarMenu {
    * @param {submenu list} subMenuList 
    */
   private createMenu (parentElement: HTMLLIElement, level: number, subMenuList: Array<MenuInfo>): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
-    
     const group = this.createMenuGroup(level)
 
     // When parentElement is not null
@@ -242,10 +251,6 @@ export default class ElectronViteTitleBarMenu {
    * @param {level of menu} level 
    */
   private destroyMenuGroup (level: number): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
     const groups = this._container.querySelectorAll('ul.evtb-menu-group')
     groups.forEach(group => {
       const groupLevel = Number(group.getAttribute('level'))
@@ -372,7 +377,7 @@ export default class ElectronViteTitleBarMenu {
           e.preventDefault()
           this.destroyMenuGroup(1)
           this._isMenuActivated = false
-          this._emitter('onMenuClick', menuInfo.label)
+          this._emitter('onMenuClick', menuInfo.id, menuInfo.label)
         }
       })
     }
@@ -433,10 +438,6 @@ export default class ElectronViteTitleBarMenu {
    */
   private addMenuDestroyListener (): void {
     document.addEventListener('click', (e) => {
-      if (!this._container) {
-        console.error('Instance must be initialized, but got undefined')
-        return
-      }
       let isMenuClicked: Boolean = false
       const groups: NodeListOf<HTMLElement> = this._container.querySelectorAll('ul.evtb-menu-group:not([level="0"])')
       
@@ -459,10 +460,6 @@ export default class ElectronViteTitleBarMenu {
    * @param {<li> element that clicked} clickedElement 
    */
   private setMenuSelected (level: number, clickedElement: HTMLElement | null): void {
-    if (!this._container) {
-      console.error('Instance must be initialized, but got undefined')
-      return
-    }
     const elements = this._container.querySelectorAll('li.evtb-menu-item-' + level)
     elements.forEach(li => {
       // 클릭한 메뉴 객체가 아닌데 selected 클래스가 있을 경우 제거한다.
@@ -509,3 +506,5 @@ export default class ElectronViteTitleBarMenu {
     }
   }
 }
+
+export default ElectronViteTitleBarMenu
