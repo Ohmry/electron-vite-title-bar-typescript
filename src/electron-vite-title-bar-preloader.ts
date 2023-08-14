@@ -11,7 +11,7 @@ class ElectronViteTitleBarPreloader {
       restore: () => ipcRenderer.invoke('evtb:restore'),
       close: () => ipcRenderer.invoke('evtb:close')
     }
-    
+
     // @ts-ignore
     if (process.contextIsolated) {
       try {

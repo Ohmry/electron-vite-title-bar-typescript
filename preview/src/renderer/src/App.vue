@@ -1,20 +1,23 @@
 <template>
   <ElectronViteTitleBar
+    ref="titlebar"
     :menu="menu"
-    @onMenuClick="(e) => console.log(e)"
+    @on-menu-click="onMenuClick"
   ></ElectronViteTitleBar>
 </template>
 <script setup lang="ts">
-import ElectronViteTitleBar from '../../../../src/ElectronViteTitleBar.vue'
+import { ref, onMounted } from 'vue'
+import { ElectronViteTitleBar, ElectronViteTitleBarMenu } from '../../../../src/index.ts'
 import '../../../../src/electron-vite-title-bar-style.css'
 
+const titlebar = ref()
 const menu: Array<MenuInfo> = [
   {
     label: 'File',
     subMenu: [
       { label: 'New', hotKey: 'Ctrl+N' },
       { label: 'Open', hotKey: 'Ctrl+O' },
-      { label: 'Open Recent' }
+      { label: 'Open Recent', disabled: true }
     ]
   },
   {
@@ -45,5 +48,14 @@ const menu: Array<MenuInfo> = [
     ]
   }
 ]
+
+const onMenuClick = (id: string, label: string): void => {
+  console.log(id, label)
+}
+
+onMounted(() => {
+  const instance = ElectronViteTitleBarMenu.getInstance()
+  instance.setMenuDisabled('evtb-menu-item-1-1', true)
+})
 </script>
 <style></style>

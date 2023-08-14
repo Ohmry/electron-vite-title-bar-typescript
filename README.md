@@ -112,3 +112,8 @@ const menu = [
 ]
 </script>
 ```
+
+### Documents
+you can see another information of it as below documents.
+  - [Managing for menu](./docs/managing-for-menu.md)
+  - [Customize color](./docs/customize-color.md)

@@ -33,11 +33,10 @@ const props = defineProps<{
   menu?: Array<MenuInfo>
 }>()
 const emitter = defineEmits<{
-  (e: 'onMenuClick', label: string): void
+  (e: 'onMenuClick', id: string, label: string): void
 }>()
 
 const container = ref<HTMLElement>()
-let electronViteTitleBarMenu: ElectronViteTitleBarMenu
 const isWindowMaximized = ref<Boolean>(false)
 const onMinimize = () => window.evtb.minimize()
 const onMaximize = () => window.evtb.maximize()
@@ -48,12 +47,15 @@ onMounted(async () => {
   if (props.menu && container.value != undefined) {
     const menuContainer = document.querySelector('section.evtb-menu-container') as HTMLElement
     const titleContainer = document.querySelector('section.evtb-title-container') as HTMLElement
-    electronViteTitleBarMenu = new ElectronViteTitleBarMenu(menuContainer, container.value, titleContainer, emitter)
+    ElectronViteTitleBarMenu.initialize(menuContainer, container.value, titleContainer, emitter)
+    const electronViteTitleBarMenu = ElectronViteTitleBarMenu.getInstance()
+    if (electronViteTitleBarMenu == undefined) {
+      console.error('ElectronViteTitleBarMenu must be initialized')
+      return
+    }
     electronViteTitleBarMenu.setMenuInfo(props.menu)
     electronViteTitleBarMenu.createRootMenu()
 
-    // 윈도우의 프레임이 변경되었을 때, 너비에 따라 루트 메뉴를 재생성할 수 있도록
-    // 이벤트를 구성한다.
     window.addEventListener('resize', () => {
       electronViteTitleBarMenu.createRootMenu()
     })
@@ -163,7 +165,7 @@ section.evtb-menu-container > ul:not([level="0"]) {
   -webkit-app-region: no-drag;
   border: 1px solid var(--evtb-menu-container-border-color);
   background-color: var(--evtb-menu-container-background-color);
-  box-shadow: 2px 2px 5px var(--evtb-menu-container-box-shadow-color);
+  box-shadow: var(--evtb-menu-container-box-shadow-offset-x) var(--evtb-menu-container-box-shadow-offset-y) var(--evtb-menu-container-box-shadow-blur-radius) var(--evtb-menu-container-box-shadow-color);
 }
 section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] {
   padding: 7px 5px 7px 10px;
@@ -176,7 +178,7 @@ section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] {
   height: 16px;
   background-color: var(--evtb-menu-item-background-color);
 }
-section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"]:hover {
+section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"]:not(.disabled):hover {
   background-color: var(--evtb-menu-item-hover-background-color);
 }
 section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] > svg {
@@ -194,8 +196,14 @@ section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] > span.evtb-
   padding: 7px 30px 7px 5px;
   color: var(--evtb-menu-item-text-color);
 }
+section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"].disabled > span.evtb-menu-item-label {
+  color: var(--evtb-menu-item-disabled-text-color);
+}
 section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] > span.evtb-menu-item-hotkey {
   padding: 7px 5px 7px 30px;
   color: var(--evtb-menu-item-hotkey-text-color);
+}
+section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"].disabled > span.evtb-menu-item-hotkey {
+  color: var(--evtb-menu-item-disabled-hotkey-text-color);
 } 
 </style>
