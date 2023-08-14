@@ -1,0 +1,49 @@
+# Color Customize
+value that Each component properties of style is declared in css file by variables. so if you want to change values of them, you can override these value in .vue file. but <style> tag should not have `scoped` attribute.
+
+
+## Way to use
+```Vue
+<style>
+:root {
+  /** Override value */
+  --evtb-container-background-color: #AA0;
+}
+</style>
+```
+
+## Variables
+| Category | Name of variable | default Value |
+|---|---|---|
+| Main | --evtb-container-background-color | #FFF |
+|| --evtb-container-border-bottom-color | #AAA |
+| Title | --evtb-title-container-text-color | #000 | 
+| Menu | --evtb-root-menu-item-background-color | #FFF |
+|| --evtb-root-menu-item-hover-background-color | #F7F7F7 |
+|| --evtb-root-menu-item-active-background-color | #AAA |
+|| --evtb-root-menu-item-text-color | #000 |
+|| --evtb-menu-container-border-color | #AAA |
+|| --evtb-menu-container-background-color | #F7F7F7 |
+|| --evtb-menu-container-box-shadow-offset-x | 0px |
+|| --evtb-menu-container-box-shadow-offset-y | 0px |
+|| --evtb-menu-container-box-shadow-blur-radius | 0px |
+|| --evtb-menu-container-box-shadow-color | #CCC |
+|| --evtb-menu-item-background-color | #F7F7F7 |
+|| --evtb-menu-item-hover-background-color | #CCC |
+|| --evtb-menu-item-text-color | #000 |
+|| --evtb-menu-item-disabled-text-color | #CCC |
+|| --evtb-menu-item-separator-color | #AAA |
+|| --evtb-menu-item-expand-icon-fill-color | #000 |
+|| --evtb-menu-item-hotkey-text-color | #000 |
+|| --evtb-menu-item-disabled-hotkey-text-color | #CCC |
+|| --evtb-menu-item-collapse-icon-fill-color | #000 |
+|Button| --evtb-menu-button-background-color | transparent |
+|| --evtb-menu-button-hover-background-color | #E7E7E7 |
+|| --evtb-menu-button-hover-icon-color | #000 |
+|| --evtb-menu-button-active-background-color | #AAA |
+|| --evtb-menu-button-active-icon-color | #000 |
+|| --evtb-menu-button-icon-color | #000 |
+|| --evtb-menu-button-close-hover-background-color | #FF4646 |
+|| --evtb-menu-button-close-hover-icon-color | #FFF |
+|| --evtb-menu-button-close-active-background-color | #FFA4A4 |
+|| --evtb-menu-button-close-active-icon-color | #FFF |
