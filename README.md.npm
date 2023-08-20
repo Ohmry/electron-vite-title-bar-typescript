@@ -5,6 +5,11 @@ You can use this component for window title bar instead of native window title b
 See [Document](https://github.com/Ohmry/electron-vite-title-bar-typescript#readme).
 
 ## Change logs
+### 1.1.1
+  - Add event to close menu groups when window resized.
+  - Fixed for not collapse root menu.
+  - Fixed adjust position of submenu groups when those overflows over
+    window.
 ### 1.1.0
   - Add functions to handle information of menu such as get list or information of menu or set disabled to menu.
   - Add id into information menu and you can get id and label of menu when click menu item.
