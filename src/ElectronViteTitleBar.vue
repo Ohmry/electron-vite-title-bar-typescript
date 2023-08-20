@@ -195,6 +195,7 @@ section.evtb-menu-container > ul:not([level="0"]) > li[type="separator"] {
 section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"] > span.evtb-menu-item-label {
   padding: 7px 30px 7px 5px;
   color: var(--evtb-menu-item-text-color);
+  white-space: nowrap;
 }
 section.evtb-menu-container > ul:not([level="0"]) > li[type="menu"].disabled > span.evtb-menu-item-label {
   color: var(--evtb-menu-item-disabled-text-color);
