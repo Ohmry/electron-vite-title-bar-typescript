@@ -10,9 +10,11 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
+    minWidth: 480,
     height: 670,
     show: false,
-    autoHideMenuBar: true,
+    frame: false,
+    autoHideMenuBar: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

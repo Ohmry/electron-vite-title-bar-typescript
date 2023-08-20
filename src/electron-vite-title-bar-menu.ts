@@ -165,10 +165,10 @@ class ElectronViteTitleBarMenu {
         const menuContainerWidth = this._container.getBoundingClientRect().width
         const menuContainerX = this._container.getBoundingClientRect().x
         const titleContainerX = this._titleContainer.getBoundingClientRect().x
-        const tileContainerVisible = this._titleContainer.style.visibility == 'visible'
-  
+        const titleContainerVisible = this._titleContainer.clientWidth > 0
+
         // If overlap elements menu container and title container when create menu. 
-        if (tileContainerVisible && (menuContainerWidth + menuContainerX) >= (titleContainerX - 20)) {
+        if (titleContainerVisible && (menuContainerWidth + menuContainerX) >= (titleContainerX - 20)) {
           // Delete the second node from the end to make space for the collapse menu.
           group.removeChild(menuItem)
           if (group.hasChildNodes() && group.lastChild) {
@@ -214,12 +214,9 @@ class ElectronViteTitleBarMenu {
    */
   private createMenu (parentElement: HTMLLIElement, level: number, subMenuList: Array<MenuInfo>): void {
     const group = this.createMenuGroup(level)
-
-    // When parentElement is not null
-    // submenu group element set position as right side of parentElement
-    if (parentElement) {
-      this.adjustGroupPosition(parentElement, level, group)
-    }
+    group.style.visibility = 'hidden'
+    this._container.appendChild(group)
+    
     // When selected menu is changed
     // add .selected class to the selected menu and remove .selected class from previous selected menu
     if (level > 0) {
@@ -231,7 +228,13 @@ class ElectronViteTitleBarMenu {
       group.appendChild(element)
     })
 
-    this._container.appendChild(group)
+    // When parentElement is not null
+    // submenu group element set position as right side of parentElement
+    if (parentElement) {
+      this.adjustGroupPosition(parentElement, level, group)
+    }
+
+    group.style.visibility = ''
   }
 
   /**
@@ -284,14 +287,15 @@ class ElectronViteTitleBarMenu {
       left = parentElement.getBoundingClientRect().x + parentElement.getBoundingClientRect().width
     }
 
-    // 하위 메뉴의 우측변에 대한 X 값 위치
-    const subGroupRightPositionX = left + parentElement.getBoundingClientRect().width
-
     // 하위 메뉴의 우측변 X 값이 프레임을 벗어나는 경우
-    if (subGroupRightPositionX > window.innerWidth) {
-      // 우측변이 프레임에서 벗어난 픽셀만큼을 계산해서 빼준다.
-      left -= (subGroupRightPositionX - window.innerWidth)
-      // 너무 딱 붙어도 이상하니까 살짝 margin 값을 추가한다.
+    if (left + group.clientWidth > window.innerWidth) {
+      if (window.innerWidth - left < group.clientWidth) {
+        left = window.innerWidth - group.clientWidth
+      } else {
+        left -= (left - window.innerWidth)
+      }
+
+      // Margin
       left -= 10
       top += 10
     }
@@ -362,11 +366,11 @@ class ElectronViteTitleBarMenu {
         }
         if (keys.includes('Alt')) {
           hasAlt = true
-          keys.splice(keys.indexOf('Alt', 1))
+          keys.splice(keys.indexOf('Alt'), 1)
         }
         if (keys.includes('Shift')) {
           hasShift = true
-          keys.splice(keys.indexOf('Shift', 1))
+          keys.splice(keys.indexOf('Shift'), 1)
         }
 
         if (keys.length < 1) {
@@ -440,7 +444,7 @@ class ElectronViteTitleBarMenu {
     document.addEventListener('click', (e) => {
       let isMenuClicked: Boolean = false
       const groups: NodeListOf<HTMLElement> = this._container.querySelectorAll('ul.evtb-menu-group:not([level="0"])')
-      
+
       groups.forEach(group => {
         if (e.target == group) {
           isMenuClicked = true
@@ -451,6 +455,11 @@ class ElectronViteTitleBarMenu {
         this.destroyMenuGroup(1)
         this._isMenuActivated = false
       }
+    })
+
+    window.addEventListener('resize', () => {
+      this.destroyMenuGroup(1)
+      this._isMenuActivated = false
     })
   }
 
